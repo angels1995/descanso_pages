@@ -10,7 +10,7 @@
  */
 document.addEventListener('DOMContentLoaded', function () {
 
-    const API_BASE = 'https://api.servicios-enlinea.net.pe';
+    const API_BASE = 'https://descanso-api.sin-flower.com';
 
     const TIPOS = {
         citt: {

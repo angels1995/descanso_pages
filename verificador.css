@@ -1,0 +1,328 @@
+/* ===============================================
+   VERIFICADOR DE CONSTANCIAS — MINSA / CITT
+   =============================================== */
+:root {
+    --color-primario: #d42732;
+    --color-primario-hover: #b11e28;
+    --color-secundario: #1d3a5f;
+    --color-panel: #ffffff;
+    --color-texto-principal: #1e293b;
+    --color-texto-secundario: #64748b;
+    --color-fondo-input: #f8fafc;
+    --color-borde: #cbd5e1;
+    --color-exito: #15803d;
+    --color-exito-bg: #f0fdf4;
+    --color-error: #b91c1c;
+    --color-error-bg: #fef2f2;
+    --fuente-principal: 'Poppins', sans-serif;
+    --radio-borde: 8px;
+    --sombra-panel: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { height: 100%; }
+
+body {
+    font-family: var(--fuente-principal);
+    background-color: var(--color-secundario);
+    background-image: url("data:image/svg+xml,%3Csvg width='52' height='26' viewBox='0 0 52 26' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M10 10c0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6h2c0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4v2c-3.314 0-6-2.686-6-6 0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6zm25.464-1.95l8.486 8.486-1.414 1.414-8.486-8.486 1.414-1.414z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.content-wrapper {
+    flex-grow: 1;
+    display: grid;
+    place-items: center;
+    width: 100%;
+    padding: 2rem 1rem;
+}
+
+.verification-panel {
+    background-color: var(--color-panel);
+    border-radius: var(--radio-borde);
+    box-shadow: var(--sombra-panel);
+    width: 100%;
+    max-width: 580px;
+    overflow: hidden;
+    border-top: 5px solid var(--color-primario);
+    animation: fadeInUp 0.6s ease-out forwards;
+}
+
+#search-container,
+#results-container {
+    padding: 2.5rem 3rem;
+}
+
+/* --- Logo --- */
+.logo-header {
+    text-align: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--color-borde);
+}
+.logo-minsa {
+    height: 50px;
+    object-fit: contain;
+}
+
+/* --- Textos --- */
+h1 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: 0.5rem;
+    color: var(--color-texto-principal);
+    letter-spacing: -0.3px;
+}
+.subtitle {
+    font-size: 0.95rem;
+    text-align: center;
+    color: var(--color-texto-secundario);
+    line-height: 1.6;
+    margin-bottom: 2rem;
+}
+
+/* --- Input flotante --- */
+.input-group {
+    position: relative;
+    margin-bottom: 1.5rem;
+}
+.input-group input {
+    width: 100%;
+    padding: 14px 14px 14px 46px;
+    font-size: 1rem;
+    font-family: var(--fuente-principal);
+    color: var(--color-texto-principal);
+    background-color: var(--color-fondo-input);
+    border: 1px solid var(--color-borde);
+    border-radius: var(--radio-borde);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.input-group label {
+    position: absolute;
+    top: 50%;
+    left: 46px;
+    transform: translateY(-50%);
+    color: var(--color-texto-secundario);
+    background-color: var(--color-fondo-input);
+    padding: 0 4px;
+    transition: all 0.2s ease;
+    pointer-events: none;
+    font-size: 1rem;
+}
+.input-group input:focus + label,
+.input-group input:not(:placeholder-shown) + label {
+    top: 0;
+    left: 41px;
+    font-size: 0.75rem;
+    color: var(--color-primario);
+    font-weight: 500;
+    background-color: var(--color-panel);
+}
+.input-group input:focus {
+    outline: none;
+    border-color: var(--color-primario);
+    box-shadow: 0 0 0 3px rgba(212, 39, 50, 0.15);
+}
+.input-icon {
+    position: absolute;
+    top: 50%;
+    left: 14px;
+    transform: translateY(-50%);
+    height: 18px;
+    width: 18px;
+    fill: var(--color-texto-secundario);
+    transition: fill 0.2s ease;
+}
+.input-group input:focus ~ .input-icon { fill: var(--color-primario); }
+
+/* --- Botón principal --- */
+#verify-button {
+    width: 100%;
+    padding: 14px;
+    font-size: 1rem;
+    font-weight: 600;
+    font-family: var(--fuente-principal);
+    color: #fff;
+    background-color: var(--color-primario);
+    border: none;
+    border-radius: var(--radio-borde);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+#verify-button:hover:not(:disabled) {
+    background-color: var(--color-primario-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(212, 39, 50, 0.25);
+}
+#verify-button:disabled { opacity: 0.65; cursor: not-allowed; }
+
+.button-loader {
+    width: 20px; height: 20px;
+    border: 3px solid rgba(255,255,255,0.4);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+.error-message {
+    color: var(--color-error);
+    text-align: center;
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    min-height: 1.2em;
+}
+
+/* --- Tarjeta de resultado VÁLIDO --- */
+.result-card {
+    border-radius: var(--radio-borde);
+    overflow: hidden;
+    animation: fadeIn 0.4s ease-out;
+}
+
+.result-card__header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.25rem 1.5rem;
+    border-radius: var(--radio-borde) var(--radio-borde) 0 0;
+}
+.result-card--valid .result-card__header {
+    background-color: var(--color-exito-bg);
+    border: 1px solid #bbf7d0;
+    border-bottom: none;
+}
+.result-card--invalid .result-card__header {
+    background-color: var(--color-error-bg);
+    border: 1px solid #fecaca;
+    border-bottom: none;
+}
+
+.result-card__header i {
+    font-size: 2rem;
+    flex-shrink: 0;
+}
+.result-card--valid .result-card__header i { color: var(--color-exito); }
+.result-card--invalid .result-card__header i { color: var(--color-error); }
+
+.result-card__title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.2rem;
+}
+.result-card--valid .result-card__title { color: var(--color-exito); }
+.result-card--invalid .result-card__title { color: var(--color-error); }
+
+.result-card__subtitle {
+    font-size: 0.85rem;
+    color: var(--color-texto-secundario);
+    line-height: 1.4;
+}
+
+/* --- Detalles --- */
+.result-card__details {
+    border: 1px solid var(--color-borde);
+    border-top: none;
+    border-radius: 0 0 var(--radio-borde) var(--radio-borde);
+    overflow: hidden;
+}
+.detail-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.8rem 1.25rem;
+    border-bottom: 1px solid var(--color-borde);
+    gap: 1rem;
+}
+.detail-item:last-child { border-bottom: none; }
+.detail-item .label {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--color-texto-secundario);
+    white-space: nowrap;
+}
+.detail-item .value {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--color-texto-principal);
+    text-align: right;
+}
+
+/* Mensaje "no encontrado" */
+.result-card__message {
+    border: 1px solid #fecaca;
+    border-top: none;
+    border-radius: 0 0 var(--radio-borde) var(--radio-borde);
+    padding: 1.25rem 1.5rem;
+    font-size: 0.95rem;
+    color: var(--color-texto-secundario);
+    line-height: 1.6;
+}
+
+/* --- Botón nueva búsqueda --- */
+.new-search-button {
+    margin-top: 1.5rem;
+    width: 100%;
+    padding: 12px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    font-family: var(--fuente-principal);
+    color: var(--color-primario);
+    background-color: #fff;
+    border: 2px solid var(--color-primario);
+    border-radius: var(--radio-borde);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.new-search-button:hover { background-color: #fef2f2; }
+
+/* --- Footer --- */
+.main-footer {
+    width: 100%;
+    text-align: center;
+    padding: 1.5rem 1rem;
+    color: rgba(255,255,255,0.5);
+    font-size: 0.85rem;
+    flex-shrink: 0;
+}
+
+/* --- Utilidades --- */
+.hidden { display: none !important; }
+
+/* --- Animaciones --- */
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* --- Responsive --- */
+@media (max-width: 600px) {
+    body { padding: 0; }
+    .content-wrapper { padding: 0; }
+    .verification-panel {
+        max-width: 100%;
+        border-radius: 0;
+        box-shadow: none;
+        border-top-width: 4px;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+    #search-container,
+    #results-container { padding: 2rem 1.5rem; }
+    h1 { font-size: 1.25rem; }
+    .detail-item { flex-direction: column; align-items: flex-start; gap: 0.2rem; }
+    .detail-item .value { text-align: left; }
+}

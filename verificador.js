@@ -27,6 +27,13 @@ document.addEventListener('DOMContentLoaded', function () {
             h1: 'Verificación del registro de receta',
             subtitulo: 'Consulta un borrador registrado en el sistema. No acredita firma, habilitación profesional ni emisión por MINSA.'
         },
+        essalud: {
+            ruta: 'essalud/citt-demo',
+            nombre: 'Documento pendiente de firma',
+            titulo: 'Consulta del registro interno',
+            h1: 'Consulta del registro interno',
+            subtitulo: 'Documento pendiente de validación y firma profesional. Este registro no acredita atención médica ni emisión por EsSalud.'
+        },
         minsa: {
             ruta: 'minsa',
             nombre: 'MINSA',
@@ -49,6 +56,9 @@ document.addEventListener('DOMContentLoaded', function () {
     const pageSubtitle      = document.getElementById('page-subtitle');
 
     let tipoActual = null;
+    const footer = document.querySelector('.main-footer');
+    const footerOriginal = footer?.textContent;
+    const logo = document.getElementById('logo-img');
 
     // --- UI helpers ---
     function aplicarTipo(tipoKey) {
@@ -58,7 +68,9 @@ document.addEventListener('DOMContentLoaded', function () {
         document.title = cfg.titulo;
         if (pageH1)       pageH1.textContent       = cfg.h1;
         if (pageSubtitle) pageSubtitle.textContent  = cfg.subtitulo;
-        buttonText.textContent = tipoKey === 'receta' ? 'Verificar registro' : 'Verificar Autenticidad';
+        buttonText.textContent = ['receta','essalud'].includes(tipoKey) ? 'Verificar registro' : 'Verificar Autenticidad';
+        if (logo) logo.style.display = tipoKey === 'essalud' ? 'none' : '';
+        if (footer) footer.textContent = tipoKey === 'essalud' ? 'Registro interno de documentos pendientes de firma. Sin acreditación institucional.' : footerOriginal;
     }
 
     function setLoading(isLoading) {
@@ -78,6 +90,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // --- Render resultados ---
     function displayResults(data, tipoKey) {
+        if (tipoKey === 'essalud') { displayEssalud(data); return; }
         if (tipoKey === 'receta') { displayReceta(data); return; }
         const cfg = TIPOS[tipoKey];
         const vigente = data.vigente;
@@ -170,7 +183,41 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('newSearchBtn').addEventListener('click', resetView);
     }
 
+    function displayEssalud(data) {
+        resultsContainer.innerHTML = `<div class="result-card">
+            <h3 class="result-card__title">Registro interno encontrado</h3>
+            <p class="result-card__subtitle">PENDIENTE DE VALIDACIÓN Y FIRMA PROFESIONAL</p>
+            <div class="result-card__details" id="essalud-details"></div>
+            <p>La consulta confirma el registro interno. No acredita atención médica, firma, habilitación profesional ni emisión por EsSalud. No se publican datos del paciente ni información clínica.</p>
+            <button class="new-search-button" id="newSearchBtn">Nueva consulta</button></div>`;
+        const details = document.getElementById('essalud-details');
+        const filas = [
+            ['Código del registro', data.autog],
+            ['Estado', 'PENDIENTE DE FIRMA'],
+            ['Fecha de registro', new Date(data.created_at).toLocaleString('es-PE', { timeZone: 'America/Lima' })],
+            ['Huella SHA-256 del PDF original', data.pdf_sha256]
+        ];
+        filas.forEach(([label,value])=>{
+            const item=document.createElement('div');item.className='detail-item';
+            const key=document.createElement('span');key.className='label';key.textContent=label;
+            const content=document.createElement('span');content.className='value';
+            content.textContent=String(value??'No disponible');content.style.overflowWrap='anywhere';
+            item.append(key,content);details.append(item);
+        });
+        searchContainer.classList.add('hidden');resultsContainer.classList.remove('hidden');
+        document.getElementById('newSearchBtn').addEventListener('click',resetView);
+    }
+
     function displayNotFound(autog) {
+        if (tipoActual === 'essalud') {
+            resultsContainer.innerHTML = `<div class="result-card result-card--invalid">
+                <h3 class="result-card__title">Registro interno no encontrado</h3>
+                <p>Verifica el código. Las muestras antiguas de demostración no tienen registro.</p>
+                <button class="new-search-button" id="newSearchBtn">Intentar de nuevo</button></div>`;
+            searchContainer.classList.add('hidden');resultsContainer.classList.remove('hidden');
+            document.getElementById('newSearchBtn').addEventListener('click',resetView);
+            return;
+        }
         if (tipoActual === 'receta') {
             resultsContainer.innerHTML = `<div class="result-card result-card--invalid">
                 <h3 class="result-card__title">Registro de receta no encontrado</h3>
@@ -223,6 +270,9 @@ document.addEventListener('DOMContentLoaded', function () {
         } else if (params.get('receta')) {
             autogCode = params.get('receta');
             aplicarTipo('receta');
+        } else if (params.get('essalud')) {
+            autogCode = params.get('essalud');
+            aplicarTipo('essalud');
         } else if (params.get('autog')) {
             autogCode = params.get('autog');
             // tipo desconocido: se probarán ambas tablas
@@ -241,7 +291,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (resp.status === 404) return null;
         if (!resp.ok) throw new Error(`Error del servidor (${resp.status})`);
         const payload = await resp.json();
-        return tipoKey === 'receta' ? (payload.status === true ? payload.data : null) : payload;
+        return ['receta','essalud'].includes(tipoKey) ? (payload.status === true ? payload.data : null) : payload;
     }
 
     // --- Submit ---
@@ -258,6 +308,14 @@ document.addEventListener('DOMContentLoaded', function () {
         setLoading(true);
 
         try {
+            if (autogValue.startsWith('ESSALUD-')) aplicarTipo('essalud');
+            else if (autogValue.startsWith('RECETA-')) aplicarTipo('receta');
+            if (tipoActual === 'essalud') {
+                if (!/^ESSALUD-[A-F0-9]{32}$/.test(autogValue)) {
+                    formError.textContent = 'El código del registro no es válido.';
+                    return;
+                }
+            }
             if (tipoActual === 'receta' || autogValue.startsWith('RECETA-')) {
                 aplicarTipo('receta');
                 if (!/^RECETA-[A-F0-9]{32}$/.test(autogValue)) {

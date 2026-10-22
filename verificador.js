@@ -20,6 +20,13 @@ document.addEventListener('DOMContentLoaded', function () {
             h1: 'Verificación de Autenticidad CITT',
             subtitulo: 'Ingrese el código del Certificado de Incapacidad Temporal para el Trabajo para validar su autenticidad en el sistema.'
         },
+        receta: {
+            ruta: 'receta',
+            nombre: 'Receta',
+            titulo: 'Verificación del registro de receta',
+            h1: 'Verificación del registro de receta',
+            subtitulo: 'Consulta un borrador registrado en el sistema. No acredita firma, habilitación profesional ni emisión por MINSA.'
+        },
         minsa: {
             ruta: 'minsa',
             nombre: 'MINSA',
@@ -51,6 +58,7 @@ document.addEventListener('DOMContentLoaded', function () {
         document.title = cfg.titulo;
         if (pageH1)       pageH1.textContent       = cfg.h1;
         if (pageSubtitle) pageSubtitle.textContent  = cfg.subtitulo;
+        buttonText.textContent = tipoKey === 'receta' ? 'Verificar registro' : 'Verificar Autenticidad';
     }
 
     function setLoading(isLoading) {
@@ -70,6 +78,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // --- Render resultados ---
     function displayResults(data, tipoKey) {
+        if (tipoKey === 'receta') { displayReceta(data); return; }
         const cfg = TIPOS[tipoKey];
         const vigente = data.vigente;
 
@@ -129,7 +138,48 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('newSearchBtn').addEventListener('click', resetView);
     }
 
+    function displayReceta(data) {
+        // Los datos del registro se insertan como texto, nunca como HTML.
+        resultsContainer.innerHTML = `
+            <div class="result-card">
+                <div class="result-card__header"><div>
+                    <h3 class="result-card__title">Registro de receta encontrado</h3>
+                    <p class="result-card__subtitle">BORRADOR - requiere validación y firma del profesional.</p>
+                </div></div>
+                <div class="result-card__details" id="receta-details"></div>
+                <p class="result-card__message">Este registro no acredita firma, habilitación profesional ni emisión por MINSA. No se publican datos del paciente ni indicaciones clínicas.</p>
+                <button class="new-search-button" id="newSearchBtn">Nueva consulta</button>
+            </div>`;
+        const details = document.getElementById('receta-details');
+        const filas = [
+            ['Código del registro', data.autog],
+            ['Estado del documento', 'BORRADOR'],
+            ['Fecha de registro', new Date(data.created_at).toLocaleString('es-PE', { timeZone: 'America/Lima' })],
+            ['Plazo declarado hasta', formatDate(data.valido_hasta)],
+            ['Estado del plazo', data.dentro_del_plazo_declarado ? 'Dentro del plazo declarado' : 'Plazo declarado vencido'],
+            ['Medicamentos registrados', data.medicamentos_total]
+        ];
+        filas.forEach(([label, value]) => {
+            const item = document.createElement('div'); item.className = 'detail-item';
+            const key = document.createElement('span'); key.className = 'label'; key.textContent = label;
+            const content = document.createElement('span'); content.className = 'value';
+            content.textContent = String(value ?? 'No disponible'); content.style.overflowWrap = 'anywhere';
+            item.append(key, content); details.append(item);
+        });
+        searchContainer.classList.add('hidden'); resultsContainer.classList.remove('hidden');
+        document.getElementById('newSearchBtn').addEventListener('click', resetView);
+    }
+
     function displayNotFound(autog) {
+        if (tipoActual === 'receta') {
+            resultsContainer.innerHTML = `<div class="result-card result-card--invalid">
+                <h3 class="result-card__title">Registro de receta no encontrado</h3>
+                <p>Verifica el código. Las muestras locales no tienen registro en producción.</p>
+                <button class="new-search-button" id="newSearchBtn">Intentar de nuevo</button></div>`;
+            searchContainer.classList.add('hidden'); resultsContainer.classList.remove('hidden');
+            document.getElementById('newSearchBtn').addEventListener('click', resetView);
+            return;
+        }
         resultsContainer.innerHTML = `
             <div class="result-card result-card--invalid">
                 <div class="result-card__header">
@@ -170,6 +220,9 @@ document.addEventListener('DOMContentLoaded', function () {
         } else if (params.get('minsa')) {
             autogCode = params.get('minsa');
             aplicarTipo('minsa');
+        } else if (params.get('receta')) {
+            autogCode = params.get('receta');
+            aplicarTipo('receta');
         } else if (params.get('autog')) {
             autogCode = params.get('autog');
             // tipo desconocido: se probarán ambas tablas
@@ -187,7 +240,8 @@ document.addEventListener('DOMContentLoaded', function () {
         const resp = await fetch(`${API_BASE}/api/${cfg.ruta}/verificar/${encodeURIComponent(autogValue)}`);
         if (resp.status === 404) return null;
         if (!resp.ok) throw new Error(`Error del servidor (${resp.status})`);
-        return resp.json();
+        const payload = await resp.json();
+        return tipoKey === 'receta' ? (payload.status === true ? payload.data : null) : payload;
     }
 
     // --- Submit ---
@@ -204,6 +258,13 @@ document.addEventListener('DOMContentLoaded', function () {
         setLoading(true);
 
         try {
+            if (tipoActual === 'receta' || autogValue.startsWith('RECETA-')) {
+                aplicarTipo('receta');
+                if (!/^RECETA-[A-F0-9]{32}$/.test(autogValue)) {
+                    formError.textContent = 'El código de receta no es válido.';
+                    return;
+                }
+            }
             const ordenBusqueda = tipoActual ? [tipoActual] : ['citt', 'minsa'];
             let encontrado     = null;
             let tipoEncontrado = null;

@@ -204,12 +204,12 @@ h1 {
     border-bottom: none;
 }
 .result-card--pending .result-card__header {
-    background-color: #eff6ff;
-    border: 1px solid #bfdbfe;
+    background-color: var(--color-exito-bg);
+    border: 1px solid #bbf7d0;
     border-bottom: none;
 }
 .result-card--pending .result-card__title,
-.result-card--pending .pending-icon { color: #1e4976; }
+.result-card--pending .pending-icon { color: var(--color-exito); }
 .result-card--pending .pending-icon { flex-shrink: 0; }
 .result-card--pending .detail-item .record-code {
     min-width: 0;

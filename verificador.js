@@ -201,8 +201,8 @@ document.addEventListener('DOMContentLoaded', function () {
         resultsContainer.innerHTML = `<div class="result-card result-card--pending">
             <div class="result-card__header">
                 <svg class="pending-icon" width="32" height="32" viewBox="0 0 32 32" fill="none" aria-hidden="true"><circle cx="16" cy="16" r="13" stroke="currentColor" stroke-width="2.5"/><path d="M16 8v9l6 3" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                <div><h3 class="result-card__title">Registro interno encontrado</h3>
-                <p class="result-card__subtitle">Pendiente de validación y firma profesional.</p></div>
+                <div><h3 class="result-card__title">Registro verificado en el sistema</h3>
+                </div>
             </div>
             <div class="result-card__details" id="essalud-details"></div>
             <button class="new-search-button" id="newSearchBtn">Nueva consulta</button></div>`;

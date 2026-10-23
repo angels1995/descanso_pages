@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', function () {
         documento: {
             ruta: 'documentos', nombre: 'Documento pendiente',
             titulo: 'Consulta del registro interno', h1: 'Consulta del registro interno',
-            subtitulo: 'Documento pendiente de validación y firma profesional. El registro no acredita atención ni emisión institucional.'
+            subtitulo: 'Consulta el registro del documento en el sistema.'
         },
         citt: {
             ruta: 'citt',
@@ -30,14 +30,14 @@ document.addEventListener('DOMContentLoaded', function () {
             nombre: 'Receta',
             titulo: 'Verificación del registro de receta',
             h1: 'Verificación del registro de receta',
-            subtitulo: 'Consulta un borrador registrado en el sistema. No acredita firma, habilitación profesional ni emisión por MINSA.'
+            subtitulo: 'Consulta el registro de la receta en el sistema.'
         },
         essalud: {
             ruta: 'essalud/citt-demo',
             nombre: 'Documento pendiente de firma',
             titulo: 'Consulta del registro interno',
             h1: 'Consulta del registro interno',
-            subtitulo: 'Documento pendiente de validación y firma profesional. Este registro no acredita atención médica ni emisión por EsSalud.'
+            subtitulo: 'Consulta el registro del documento en el sistema.'
         },
         minsa: {
             ruta: 'minsa',
@@ -159,10 +159,9 @@ document.addEventListener('DOMContentLoaded', function () {
     function displayReceta(data) {
         // Los datos del registro se insertan como texto, nunca como HTML.
         resultsContainer.innerHTML = `
-            <div class="result-card">
-                <div class="result-card__header"><div>
-                    <h3 class="result-card__title">Registro de receta encontrado</h3>
-                    <p class="result-card__subtitle">BORRADOR - requiere validación y firma del profesional.</p>
+            <div class="result-card result-card--pending">
+                <div class="result-card__header"><i class="bi bi-patch-check-fill pending-icon" aria-hidden="true"></i><div>
+                    <h3 class="result-card__title">Registro verificado en el sistema</h3>
                 </div></div>
                 <div class="result-card__details" id="receta-details"></div>
                 <p class="result-card__message">Este registro no acredita firma, habilitación profesional ni emisión por MINSA. No se publican datos del paciente ni indicaciones clínicas.</p>

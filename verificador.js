@@ -188,6 +188,16 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function displayEssalud(data) {
+        const nombresDocumento = {
+            'receta-minsa-v1': 'Receta médica',
+            'receta-minsa-v2': 'Receta médica',
+            'receta-essalud-v1': 'Receta médica',
+            'receta-essalud-v2': 'Receta médica',
+            'certificado-essalud': 'Certificado médico',
+            'laluz-certificado': 'Certificado médico',
+            'laluz-receta': 'Receta médica',
+            'laluz-descanso': 'Constancia de descanso médico'
+        };
         resultsContainer.innerHTML = `<div class="result-card result-card--pending">
             <div class="result-card__header">
                 <svg class="pending-icon" width="32" height="32" viewBox="0 0 32 32" fill="none" aria-hidden="true"><circle cx="16" cy="16" r="13" stroke="currentColor" stroke-width="2.5"/><path d="M16 8v9l6 3" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -199,7 +209,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const details = document.getElementById('essalud-details');
         const filas = [
             ['Código del registro', data.autog],
-            ...(data.tipo ? [['Tipo de documento', data.tipo]] : []),
+            ...(data.tipo ? [['Tipo de documento', Object.hasOwn(nombresDocumento, data.tipo) ? nombresDocumento[data.tipo] : 'Documento médico']] : []),
             ['Fecha de registro', new Date(data.created_at).toLocaleString('es-PE', { timeZone: 'America/Lima' })],
             ['Huella SHA-256 del PDF original', data.pdf_sha256]
         ];

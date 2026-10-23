@@ -171,7 +171,6 @@ document.addEventListener('DOMContentLoaded', function () {
         const details = document.getElementById('receta-details');
         const filas = [
             ['Código del registro', data.autog],
-            ['Estado del documento', 'BORRADOR'],
             ['Fecha de registro', new Date(data.created_at).toLocaleString('es-PE', { timeZone: 'America/Lima' })],
             ['Plazo declarado hasta', formatDate(data.valido_hasta)],
             ['Estado del plazo', data.dentro_del_plazo_declarado ? 'Dentro del plazo declarado' : 'Plazo declarado vencido'],
@@ -200,7 +199,6 @@ document.addEventListener('DOMContentLoaded', function () {
         const details = document.getElementById('essalud-details');
         const filas = [
             ['Código del registro', data.autog],
-            ['Estado', 'PENDIENTE DE VALIDACIÓN Y FIRMA'],
             ...(data.tipo ? [['Tipo de documento', data.tipo]] : []),
             ['Fecha de registro', new Date(data.created_at).toLocaleString('es-PE', { timeZone: 'America/Lima' })],
             ['Huella SHA-256 del PDF original', data.pdf_sha256]

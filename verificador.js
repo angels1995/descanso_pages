@@ -13,6 +13,11 @@ document.addEventListener('DOMContentLoaded', function () {
     const API_BASE = 'https://descanso-api.sin-flower.com';
 
     const TIPOS = {
+        documento: {
+            ruta: 'documentos', nombre: 'Documento pendiente',
+            titulo: 'Consulta del registro interno', h1: 'Consulta del registro interno',
+            subtitulo: 'Documento pendiente de validación y firma profesional. El registro no acredita atención ni emisión institucional.'
+        },
         citt: {
             ruta: 'citt',
             nombre: 'CITT',
@@ -68,9 +73,9 @@ document.addEventListener('DOMContentLoaded', function () {
         document.title = cfg.titulo;
         if (pageH1)       pageH1.textContent       = cfg.h1;
         if (pageSubtitle) pageSubtitle.textContent  = cfg.subtitulo;
-        buttonText.textContent = ['receta','essalud'].includes(tipoKey) ? 'Verificar registro' : 'Verificar Autenticidad';
-        if (logo) logo.style.display = tipoKey === 'essalud' ? 'none' : '';
-        if (footer) footer.textContent = tipoKey === 'essalud' ? 'Registro interno de documentos pendientes de firma. Sin acreditación institucional.' : footerOriginal;
+        buttonText.textContent = ['receta','essalud','documento'].includes(tipoKey) ? 'Verificar registro' : 'Verificar Autenticidad';
+        if (logo) logo.style.display = ['essalud','documento'].includes(tipoKey) ? 'none' : '';
+        if (footer) footer.textContent = ['essalud','documento'].includes(tipoKey) ? 'Registro interno de documentos pendientes de firma. Sin acreditación institucional.' : footerOriginal;
     }
 
     function setLoading(isLoading) {
@@ -90,7 +95,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // --- Render resultados ---
     function displayResults(data, tipoKey) {
-        if (tipoKey === 'essalud') { displayEssalud(data); return; }
+        if (['essalud','documento'].includes(tipoKey)) { displayEssalud(data); return; }
         if (tipoKey === 'receta') { displayReceta(data); return; }
         const cfg = TIPOS[tipoKey];
         const vigente = data.vigente;
@@ -188,12 +193,13 @@ document.addEventListener('DOMContentLoaded', function () {
             <h3 class="result-card__title">Registro interno encontrado</h3>
             <p class="result-card__subtitle">PENDIENTE DE VALIDACIÓN Y FIRMA PROFESIONAL</p>
             <div class="result-card__details" id="essalud-details"></div>
-            <p>La consulta confirma el registro interno. No acredita atención médica, firma, habilitación profesional ni emisión por EsSalud. No se publican datos del paciente ni información clínica.</p>
+            <p>La consulta confirma el registro interno. No acredita atención médica, firma, habilitación profesional ni emisión institucional. No se publican datos del paciente ni información clínica.</p>
             <button class="new-search-button" id="newSearchBtn">Nueva consulta</button></div>`;
         const details = document.getElementById('essalud-details');
         const filas = [
             ['Código del registro', data.autog],
             ['Estado', 'PENDIENTE DE FIRMA'],
+            ...(data.tipo ? [['Tipo de documento', data.tipo]] : []),
             ['Fecha de registro', new Date(data.created_at).toLocaleString('es-PE', { timeZone: 'America/Lima' })],
             ['Huella SHA-256 del PDF original', data.pdf_sha256]
         ];
@@ -209,7 +215,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function displayNotFound(autog) {
-        if (tipoActual === 'essalud') {
+        if (['essalud','documento'].includes(tipoActual)) {
             resultsContainer.innerHTML = `<div class="result-card result-card--invalid">
                 <h3 class="result-card__title">Registro interno no encontrado</h3>
                 <p>Verifica el código. Las muestras antiguas de demostración no tienen registro.</p>
@@ -261,7 +267,9 @@ document.addEventListener('DOMContentLoaded', function () {
         const params = new URLSearchParams(window.location.search);
         let autogCode = null;
 
-        if (params.get('citt')) {
+        if (params.get('documento')) {
+            autogCode=params.get('documento');aplicarTipo('documento');
+        } else if (params.get('citt')) {
             autogCode = params.get('citt');
             aplicarTipo('citt');
         } else if (params.get('minsa')) {
@@ -291,7 +299,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (resp.status === 404) return null;
         if (!resp.ok) throw new Error(`Error del servidor (${resp.status})`);
         const payload = await resp.json();
-        return ['receta','essalud'].includes(tipoKey) ? (payload.status === true ? payload.data : null) : payload;
+        return ['receta','essalud','documento'].includes(tipoKey) ? (payload.status === true ? payload.data : null) : payload;
     }
 
     // --- Submit ---
@@ -308,8 +316,12 @@ document.addEventListener('DOMContentLoaded', function () {
         setLoading(true);
 
         try {
-            if (autogValue.startsWith('ESSALUD-')) aplicarTipo('essalud');
+            if (autogValue.startsWith('DOC-')) aplicarTipo('documento');
+            else if (autogValue.startsWith('ESSALUD-')) aplicarTipo('essalud');
             else if (autogValue.startsWith('RECETA-')) aplicarTipo('receta');
+            if (tipoActual==='documento'&&!/^DOC-[A-F0-9]{32}$/.test(autogValue)) {
+                formError.textContent='El código del registro no es válido.';return;
+            }
             if (tipoActual === 'essalud') {
                 if (!/^ESSALUD-[A-F0-9]{32}$/.test(autogValue)) {
                     formError.textContent = 'El código del registro no es válido.';

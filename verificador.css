@@ -203,6 +203,20 @@ h1 {
     border: 1px solid #fecaca;
     border-bottom: none;
 }
+.result-card--pending .result-card__header {
+    background-color: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-bottom: none;
+}
+.result-card--pending .result-card__title,
+.result-card--pending .pending-icon { color: #1e4976; }
+.result-card--pending .pending-icon { flex-shrink: 0; }
+.result-card--pending .detail-item .record-code {
+    min-width: 0;
+    font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+    font-size: 0.75rem;
+    line-height: 1.5;
+}
 
 .result-card__header i {
     font-size: 2rem;

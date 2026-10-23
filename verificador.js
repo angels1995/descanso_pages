@@ -189,16 +189,18 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function displayEssalud(data) {
-        resultsContainer.innerHTML = `<div class="result-card">
-            <h3 class="result-card__title">Registro interno encontrado</h3>
-            <p class="result-card__subtitle">PENDIENTE DE VALIDACIÓN Y FIRMA PROFESIONAL</p>
+        resultsContainer.innerHTML = `<div class="result-card result-card--pending">
+            <div class="result-card__header">
+                <svg class="pending-icon" width="32" height="32" viewBox="0 0 32 32" fill="none" aria-hidden="true"><circle cx="16" cy="16" r="13" stroke="currentColor" stroke-width="2.5"/><path d="M16 8v9l6 3" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <div><h3 class="result-card__title">Registro interno encontrado</h3>
+                <p class="result-card__subtitle">Pendiente de validación y firma profesional.</p></div>
+            </div>
             <div class="result-card__details" id="essalud-details"></div>
-            <p>La consulta confirma el registro interno. No acredita atención médica, firma, habilitación profesional ni emisión institucional. No se publican datos del paciente ni información clínica.</p>
             <button class="new-search-button" id="newSearchBtn">Nueva consulta</button></div>`;
         const details = document.getElementById('essalud-details');
         const filas = [
             ['Código del registro', data.autog],
-            ['Estado', 'PENDIENTE DE FIRMA'],
+            ['Estado', 'PENDIENTE DE VALIDACIÓN Y FIRMA'],
             ...(data.tipo ? [['Tipo de documento', data.tipo]] : []),
             ['Fecha de registro', new Date(data.created_at).toLocaleString('es-PE', { timeZone: 'America/Lima' })],
             ['Huella SHA-256 del PDF original', data.pdf_sha256]
@@ -207,6 +209,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const item=document.createElement('div');item.className='detail-item';
             const key=document.createElement('span');key.className='label';key.textContent=label;
             const content=document.createElement('span');content.className='value';
+            if (label === 'Código del registro' || label === 'Huella SHA-256 del PDF original') content.classList.add('record-code');
             content.textContent=String(value??'No disponible');content.style.overflowWrap='anywhere';
             item.append(key,content);details.append(item);
         });
